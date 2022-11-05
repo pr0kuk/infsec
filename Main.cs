@@ -3,6 +3,7 @@ namespace Driver
     using System;
     using CSV;
     using Microsoft.Quantum.Simulation.Simulators.QCTraceSimulators;
+    public delegate System.Threading.Tasks.Task<Microsoft.Quantum.Simulation.Core.QVoid> RunQop(QCTraceSimulator sim, long n, bool isControlled);
 
     public class Driver
     {
@@ -10,7 +11,7 @@ namespace Driver
         {
         }
 
-        private static void SingleResourceTest()
+        private static void SingleResourceTest<TypeQop>(RunQop runner, int n, bool isControlled, bool full_depth)
         {
             QCTraceSimulator estimator = GetTraceSimulator(full_depth);
             var res = runner(estimator, n, isControlled).Result;
