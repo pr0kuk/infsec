@@ -11,6 +11,12 @@ namespace Driver
         {
         }
 
+        private static QCTraceSimulator GetTraceSimulator(bool full_depth)
+        {
+            var config = new QCTraceSimulatorConfiguration();
+            return new QCTraceSimulator(config);
+        }
+        
         private static void SingleResourceTest<TypeQop>(RunQop runner, int n, bool isControlled, bool full_depth)
         {
             QCTraceSimulator estimator = GetTraceSimulator(full_depth);
