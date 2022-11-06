@@ -14,6 +14,15 @@ namespace Driver
         private static QCTraceSimulator GetTraceSimulator(bool full_depth)
         {
             var config = new QCTraceSimulatorConfiguration();
+            config.UseDepthCounter = true;
+            config.UseWidthCounter = true;
+            config.UsePrimitiveOperationsCounter = true;
+            if (full_depth)
+            {
+                config.TraceGateTimes[PrimitiveOperationsGroups.CNOT] = 1;
+                config.TraceGateTimes[PrimitiveOperationsGroups.Measure] = 1;
+                config.TraceGateTimes[PrimitiveOperationsGroups.QubitClifford] = 1;
+            }
             return new QCTraceSimulator(config);
         }
         
