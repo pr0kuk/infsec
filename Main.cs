@@ -3,12 +3,15 @@ namespace Driver
     using System;
     using CSV;
     using Microsoft.Quantum.Simulation.Simulators.QCTraceSimulators;
-    public delegate System.Threading.Tasks.Task<Microsoft.Quantum.Simulation.Core.QVoid> RunQop(QCTraceSimulator sim, long n, bool isControlled);
 
     public class Driver
     {
+        public delegate System.Threading.Tasks.Task<Microsoft.Quantum.Simulation.Core.QVoid> RunQop(QCTraceSimulator sim, long n, bool isControlled);
         public static void Main(string[] args)
         {
+            var isControlled = false;
+            var full_depth = false;
+            SingleResourceTest<EstimateFixedEllipticCurveArithmetic>(runner, 10, isControlled, full_depth);
         }
 
         private static QCTraceSimulator GetTraceSimulator(bool full_depth)
