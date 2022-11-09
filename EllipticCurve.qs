@@ -15,5 +15,12 @@ namespace Driver
     open Microsoft.Quantum.Diagnostics;
 
 
-    
+    operation FixedEllipticCurveSignedWindowedPointAdditionEstimator(nQubits : Int, isControlled : Bool) : Unit {
+        mutable modulus = 0L;
+        mutable basePoint = ECPointClassical(0L,0L,false,0L);
+        mutable curve = ECCurveWeierstrassClassical(0L, 0L, 0L);
+        let (tempCurve, tempPoint, _, _) = TenBitCurve(); 
+        set curve = tempCurve;
+        set basePoint = tempPoint;
+    }
 }
