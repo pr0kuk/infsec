@@ -15,6 +15,14 @@ namespace Driver
     open Microsoft.Quantum.Diagnostics;
 
 
+    operation ClearRegister(register:Qubit[]):Unit {
+        ResetAll(register);
+    }
+
+    operation ControlledOp<'T>(isControlled : Bool, op : ('T => Unit is Ctl), parameters : 'T) : Unit {
+        op(parameters);
+    }
+
     operation FixedEllipticCurveSignedWindowedPointAdditionEstimator(nQubits : Int, isControlled : Bool) : Unit {
         mutable modulus = 0L;
         mutable basePoint = ECPointClassical(0L,0L,false,0L);
@@ -36,7 +44,8 @@ namespace Driver
             let address = register[2 * nQubits .. 2 * nQubits + windowSize - 1];
 
             let qPoint = ECPointMontgomeryForm(MontModInt(modulus,xs),MontModInt(modulus, ys));
-            ControlledOp();
+            ControlledOp(isControlled, SignedWindowedEllipticCurvePointAdditionLowWidth, (points, address, qPoint));
+            ClearRegister(register);
         }
     }
 }
