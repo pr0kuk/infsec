@@ -22,5 +22,21 @@ namespace Driver
         let (tempCurve, tempPoint, _, _) = TenBitCurve(); 
         set curve = tempCurve;
         set basePoint = tempPoint;
+        set modulus = curve::modulus;
+        let windowSize = OptimalPointAdditionWindowSize(nQubits);
+        use register = Qubit[2 * nQubits + windowSize] {	
+            let points = PointTable(basePoint, 
+                ECPointClassical(0L, 0L, false, modulus),
+                curve,
+                windowSize
+            ) + [MultiplyClassicalECPoint(basePoint, curve, 2L^windowSize)];
+
+            let xs = LittleEndian(register[0 .. nQubits - 1]);
+            let ys = LittleEndian(register[nQubits .. 2 * nQubits - 1]);
+            let address = register[2 * nQubits .. 2 * nQubits + windowSize - 1];
+
+            let qPoint = ECPointMontgomeryForm(MontModInt(modulus,xs),MontModInt(modulus, ys));
+            ControlledOp();
+        }
     }
 }
