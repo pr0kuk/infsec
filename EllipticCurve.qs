@@ -7,6 +7,15 @@ namespace Driver
     open Microsoft.Quantum.Math;
     open Microsoft.Quantum.Diagnostics;
 
+    function 10Curve () : (ECCurveWeierstrassClassical, ECPointClassical, BigInt, String){
+        let modulus = 661L;
+        let a = 3L;
+        let b = 7L;
+        let Gx = 474L;
+        let Gy = 312L;
+        let order = 665L;
+        return (ECCurveWeierstrassClassical(a, b, modulus), ECPointClassical(Gx, Gy, true, modulus), order, "10 bit test curve");
+    }
 
     operation ClearRegister(register:Qubit[]):Unit {
         ResetAll(register);
@@ -17,10 +26,7 @@ namespace Driver
     }
 
     operation FixedEllipticCurveSignedWindowedPointAdditionEstimator(nQubits : Int, isControlled : Bool) : Unit {
-        mutable modulus = 0L;
-        mutable basePoint = ECPointClassical(0L,0L,false,0L);
-        mutable curve = ECCurveWeierstrassClassical(0L, 0L, 0L);
-        let (tempCurve, tempPoint, _, _) = TenBitCurve(); 
+        let (tempCurve, tempPoint, _, _) = 10Curve(); 
         set curve = tempCurve;
         set basePoint = tempPoint;
         set modulus = curve::modulus;
