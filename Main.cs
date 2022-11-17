@@ -35,9 +35,22 @@ namespace Driver
             }
             return new QCTraceSimulator(config);
         }
+    
+        private static void PrintHeader(int modulus, bool isControlled, bool full_depth)
+        {
+            string estimation = string.Empty;
+            estimation += " operation, CNOT count, 1-qubit Clifford count, T count, R count, M count, ";
+            if (full_depth)
+                estimation += "Full depth, ";
+            else
+                estimation += "T depth, ";
+            estimation += "initial width, extra width, comment, size";
+            Console.WriteLine(estimation);
+        }
         
         private static void Est<TypeQop>(RunQop runner, int n, bool isControlled, bool full_depth)
         {
+            PrintHeader(n, isControlled, full_depth);
             QCTraceSimulator estimator = GetSimulatorInfo(full_depth);
             var res = runner(estimator, n, isControlled).Result;
             string thisCircuitCosts = estimator.ToString;
