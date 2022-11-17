@@ -7,7 +7,7 @@ namespace Driver
     open Microsoft.Quantum.Math;
     open Microsoft.Quantum.Diagnostics;
 
-    function 10Curve () : (ECCurveWeierstrassClassical, ECPointClassical, BigInt, String){
+    function Curve10 () : (ECCurveWeierstrassClassical, ECPointClassical, BigInt, String){
         let modulus = 661L;
         let a = 3L;
         let b = 7L;
@@ -26,7 +26,7 @@ namespace Driver
     }
 
     operation FixedEllipticCurveSignedWindowedPointAdditionEstimator(nQubits : Int, isControlled : Bool) : Unit {
-        let (tempCurve, tempPoint, _, _) = 10Curve(); 
+        let (tempCurve, tempPoint, _, _) = Curve10(); 
         set curve = tempCurve;
         set basePoint = tempPoint;
         set modulus = curve::modulus;
