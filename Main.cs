@@ -9,12 +9,19 @@ namespace Driver
         public delegate System.Threading.Tasks.Task<Microsoft.Quantum.Simulation.Core.QVoid> RunQop(QCTraceSimulator sim, long n, bool isControlled);
         public static void Main(string[] args)
         {
-            var isControlled = false;
-            var full_depth = false;
-            SingleResourceTest<EstimateFixedEllipticCurveArithmetic>(runner, 10, isControlled, full_depth);
+            EstEllipticCurve(10);
         }
-
-        private static QCTraceSimulator GetTraceSimulator(bool full_depth)
+        
+        public static void EstEllipticCurve(int modulus)
+        {
+            //Debug.Print();
+            Est<FixedEllipticCurveSignedWindowedPointAdditionEstimator>(
+                FixedEllipticCurveSignedWindowedPointAdditionEstimator.Run,
+                modulus,
+                false,
+                false);
+        }
+        private static QCTraceSimulator GetSimulatorInfo(bool full_depth)
         {
             var config = new QCTraceSimulatorConfiguration();
             config.UseDepthCounter = true;
@@ -29,9 +36,9 @@ namespace Driver
             return new QCTraceSimulator(config);
         }
         
-        private static void SingleResourceTest<TypeQop>(RunQop runner, int n, bool isControlled, bool full_depth)
+        private static void Est<TypeQop>(RunQop runner, int n, bool isControlled, bool full_depth)
         {
-            QCTraceSimulator estimator = GetTraceSimulator(full_depth);
+            QCTraceSimulator estimator = GetSimulatorInfo(full_depth);
             var res = runner(estimator, n, isControlled).Result;
             string thisCircuitCosts = estimator.ToString;
             Console.WriteLine(thisCircuitCosts);
