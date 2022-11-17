@@ -53,7 +53,8 @@ namespace Driver
             PrintHeader(n, isControlled, full_depth);
             QCTraceSimulator estimator = GetSimulatorInfo(full_depth);
             var res = runner(estimator, n, isControlled).Result;
-            string thisCircuitCosts = estimator.ToString;
+            string thisCircuitCosts = Parser.CSV(estimator.ToCSV(), typeof(TypeQop).FullName, false, string.Empty, false, string.Empty);
+            thisCircuitCosts += $"{n}";
             Console.WriteLine(thisCircuitCosts);
         }
     }
