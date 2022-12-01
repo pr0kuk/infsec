@@ -50,8 +50,6 @@ namespace Driver
         mutable curve = ECCurveWeierstrassClassical(0L, 0L, 0L);
         if (nQubits == 10){
             let (tempCurve, tempPoint, _, _) = Curve10(); 
-            let (tempCurve, tempPoint, _, _) = Curve10(); 
-            let (tempCurve, tempPoint, _, _) = Curve10(); 
             set curve = tempCurve;
             set basePoint = tempPoint;
         } elif (nQubits == 256){
