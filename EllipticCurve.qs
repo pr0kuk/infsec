@@ -44,7 +44,7 @@ namespace Driver
             op(parameters); }
     }
 
-    operation FixedEllipticCurveSignedWindowedPointAdditionEstimator(nQubits : Int, isControlled : Bool) : Unit {
+    operation EllipticCurvePointAdditionEstimator(nQubits : Int, isControlled : Bool) : Unit {
         mutable modulus = 0L;
         mutable basePoint = ECPointClassical(0L,0L,false,0L);
         mutable curve = ECCurveWeierstrassClassical(0L, 0L, 0L);
@@ -73,8 +73,73 @@ namespace Driver
             let address = register[2 * nQubits .. 2 * nQubits + windowSize - 1];
 
             let qPoint = ECPointMontgomeryForm(MontModInt(modulus,xs),MontModInt(modulus, ys));
-            ControlledOp(isControlled, SignedWindowedEllipticCurvePointAdditionLowWidth, (points, address, qPoint));
+            ControlledOp(isControlled, EllipticCurvePointAddition, (points, address, qPoint));
             ClearRegister(register);
         }
     }
+
+    operation EllipticCurvPointAddition(points : ECPointClassical[], address : Qubit[], point : ECPointMontgomeryForm) : Unit {
+        use addressAncilla = Qubit() {
+            let addressLength = Length(address);
+            let unsignedAddress = address[0 .. addressLength - 2];
+            let leftAddress = LittleEndian(unsignedAddress + [addressAncilla]);
+            let signQubit = address[addressLength - 1];
+            X(signQubit);
+            let modulus = point::xs::modulus;
+            let nQubits = Length(point::xs::register!);
+            use zQubit = Qubit() {
+
+                // set the point(x2-x1, y2-y1)
+                use ancillaPointQubits = Qubit[2 * nQubits] {
+                    let ancillaPoint = ECPointMontgomeryForm(
+                        MontModInt(modulus, LittleEndian(ancillaPointQubits[0..nQubits - 1])),
+                        MontModInt(modulus, LittleEndian(ancillaPointQubits[nQubits .. 2 * nQubits - 1]))
+                    );
+                    (Controlled EqualLookup)(controls, (points, ECPointWrite(_, ancillaPoint, zQubit), leftAddress));
+                    (Controlled ModularNegMontgomeryForm)([signQubit], (ancillaPoint::ys));
+                    (Controlled Adjoint ModularAddMontgomeryForm)(controls, (ancillaPoint::xs, point::xs));
+                    (Controlled Adjoint ModularAddMontgomeryForm)(controls, (ancillaPoint::ys, point::ys));
+                    (Controlled ModularNegMontgomeryForm)([signQubit], (ancillaPoint::ys));
+                    (Controlled Adjoint EqualLookup)(controls, (points, EncodeClassicalECPointInQuantum(_, ancillaPoint), leftAddress));
+                }
+
+                use lambdaqubits = Qubit[nQubits] {
+                    let lambdas = MontModInt(modulus, LittleEndian(lambdaqubits));
+                    // compute lambda
+                    (Controlled ModularDivideAndAddMontgomeryForm)(controls + [zQubit], (point::xs, point::ys, lambdas));
+                    // y2-y1 <- lambda * (x2 - x1)
+                    ModularMulAndXorMontgomeryForm(point::xs, lambdas, point::ys);
+                    // x2 - x1 += 3x1 ( = x2 + 2x1)
+                    use ancillaPointQubits = Qubit[nQubits] {
+                        let xsMMI = MontModInt(modulus, LittleEndian(ancillaPointQubits[0..nQubits - 1]));
+                        (Controlled EqualLookup)(controls, (points, _ClassicalECPointFormat(_, xsMMI), leftAddress));
+                        (Controlled ModularAddMontgomeryForm)(controls, (xsMMI, point::xs));
+                        (Controlled Adjoint EqualLookup)(controls, (points, _ClassicalECPointFormat(_, xsMMI), leftAddress));
+                    }
+                    // x2 + 2x1 += lambda^2 ( = x1 - x3)
+                    (Adjoint ModularSquMontgomeryFormWindowedGeneric)(ModularAddMontgomeryForm(_, point::xs), lambdas);
+                    // x1 - x3 *= lambda
+                    ModularMulAndAddMontgomeryForm(point::xs, lambdas, point::ys);
+                    // compute lambda
+                    (Adjoint Controlled ModularDivideAndAddMontgomeryForm)(controls + [zQubit], (point::xs, point::ys, lambdas));
+                }
+
+                //add or sub constant p
+                use ancillaPointQubits = Qubit[2 * nQubits + 1] {
+                    let ancillaPoint = ECPointMontgomeryForm(
+                        MontModInt(modulus, LittleEndian(ancillaPointQubits[0..nQubits - 1])),
+                        MontModInt(modulus, LittleEndian(ancillaPointQubits[nQubits .. 2 * nQubits - 1]))
+                    ); 
+                    (Controlled EqualLookup)(controls, (points, EncodeClassicalECPointInQuantum(_, ancillaPoint), leftAddress));
+                    (Controlled ModularNegMontgomeryForm)([signQubit], (ancillaPoint::ys));
+                    (Controlled Adjoint ModularAddMontgomeryForm)(controls, (ancillaPoint::xs, point::xs));
+                    (Controlled Adjoint ModularAddMontgomeryForm)(controls, (ancillaPoint::ys, point::ys));
+                    (Controlled ModularNegMontgomeryForm)(controls + [zQubit], (point::xs));
+                    (Controlled ModularNegMontgomeryForm)([signQubit], (ancillaPoint::ys));
+                    (Controlled Adjoint EqualLookup)(controls, (points, ECPointWrite(_, ancillaPoint, zQubit), leftAddress));
+                }
+            }
+        }
+    }
+
 }

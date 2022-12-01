@@ -16,7 +16,7 @@ namespace Driver
         {
             //Debug.Print();
             Est(
-                FixedEllipticCurveSignedWindowedPointAdditionEstimator.Run,
+                EllipticCurvePointAdditionEstimator.Run,
                 modulus,
                 false,
                 false);
